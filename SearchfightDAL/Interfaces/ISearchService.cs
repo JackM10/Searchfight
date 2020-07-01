@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using SearchfightDAL;
 using SearchfightDAL.Models;
 
@@ -6,6 +7,6 @@ namespace SearchfightEngine.Interfaces
 {
     public interface ISearchService
     {
-        List<SearchResultDto> Search(SearchRequestModel request);
+        Task<List<SearchResultDto>> Search(SearchRequestModel request);
     }
 }
