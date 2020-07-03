@@ -5,6 +5,7 @@ using Searchfight.Controllers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using SearchfightDAL;
 using SearchfightDAL.Models;
 using SearchfightEngine.Interfaces;
@@ -40,6 +41,42 @@ namespace Searchfight.Tests
             mockConfiguration.Setup(x => x.GetSection("Searchfight:SearchEngines:Bing").Value).Returns("SearchEngnieQueryString");
             SearchfightController controller = new SearchfightController( 
                 null, 
+                mockSearchfightSummaryCounter.Object,
+                mockSearchService.Object,
+                mockConfiguration.Object);
+
+            var result = await controller.Get(requestedData.ToArray());
+
+            Assert.IsType<List<string>>(result);
+            Assert.Equal(expectedResult, result);
+        }
+
+        [Fact]
+        public async Task GetReturnErrorMessageIfInputEmpty()
+        {
+            var requestedData = new List<string>( );
+            var expectedResult = new List<string> { "Request can't be empty" };
+            var searchResponse = new List<SearchResultDto>
+            {
+                new SearchResultDto
+                {
+                    RequestValue = "test",
+                    ResultCount = 1,
+                    SearchEngineName = SearchEngine.Google,
+                    RequestId = Guid.Empty
+                }
+            };
+            Mock<ISearchfightSummaryCounter> mockSearchfightSummaryCounter = new Mock<ISearchfightSummaryCounter>();
+            Mock<ISearchService> mockSearchService = new Mock<ISearchService>();
+            Mock<IConfiguration> mockConfiguration = new Mock<IConfiguration>();
+            Mock<ILogger<SearchfightController>> mockLogger = new Mock<ILogger<SearchfightController>>();
+
+            mockSearchService.CallBase = true;
+            mockSearchService.Setup(x => x.Search(It.IsAny<SearchRequestModel>())).Returns(Task.FromResult(searchResponse));
+            mockConfiguration.Setup(x => x.GetSection("Searchfight:SearchEngines:Google").Value).Returns("SearchEngnieQueryString");
+            mockConfiguration.Setup(x => x.GetSection("Searchfight:SearchEngines:Bing").Value).Returns("SearchEngnieQueryString");
+            SearchfightController controller = new SearchfightController(
+                mockLogger.Object,
                 mockSearchfightSummaryCounter.Object,
                 mockSearchService.Object,
                 mockConfiguration.Object);

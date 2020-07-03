@@ -24,7 +24,7 @@ namespace SearchfightEngine.Services
             }
 
             var totalWinner = searchResult
-                .OrderBy(c => c.ResultCount)
+                .OrderByDescending(c => c.ResultCount)
                 .FirstOrDefault();
 
             countingResults.Add($"Total winner: {totalWinner.RequestValue}");
